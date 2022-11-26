@@ -6,3 +6,4 @@ numpy
 matplotlib
 django-environ
 psycopg2
+django-crispy-forms
