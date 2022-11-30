@@ -2,6 +2,11 @@ from django.shortcuts import render
 from django.http import *
 from ominer.forms import *
 
+from ominer.models import TweetQuery, Tweets
+
+from django.contrib.auth.models import User
+
+
 import environ
 import re
 import pandas as pd
@@ -48,11 +53,12 @@ class TwitterSentClass():
             return 'neutral'
         else:
             return 'negative'
+
  
-    def get_tweets(self, query, count=1000):
+    def get_tweets(self, qu, count):
         tweets = []
         try:
-            fetched_tweets = self.api.search_tweets(q = query, count = count)
+            fetched_tweets = self.api.search_tweets(q = qu, count = count)
             for tweet in fetched_tweets:
                 parsed_tweet = {}
                 parsed_tweet['text'] = tweet.text
@@ -62,10 +68,13 @@ class TwitterSentClass():
                         tweets.append(parsed_tweet)
                 else:
                     tweets.append(parsed_tweet)
+
             return tweets
             
         except tweepy.errors.TweepyException as e:
             print("Error : " + str(e))
+
+
 
 # Create your views here.
 
@@ -81,13 +90,13 @@ def prediction(request):
     if request.method == 'POST' :
         api = TwitterSentClass()
         t = request.POST['Keyword']
-        tweets = api.get_tweets(query = t, count = 100)
+        tweets1 = api.get_tweets(qu = t, count = 100)
 
-        pos_tweets = [tweet for tweet in tweets if tweet['sentiment'] == 'positive']
-        pos = "Positive tweets percentage: {} %".format(100*len(pos_tweets)/len(tweets))
+        pos_tweets = [tweet for tweet in tweets1 if tweet['sentiment'] == 'positive']
+        pos = "Positive tweets percentage: {} %".format(100*len(pos_tweets)/len(tweets1))
 
-        neg_tweets = [tweet for tweet in tweets if tweet['sentiment'] == 'negative']
-        neg="Negative tweets percentage: {}%".format(100*len(neg_tweets)/len(tweets))                
+        neg_tweets = [tweet for tweet in tweets1 if tweet['sentiment'] == 'negative']
+        neg="Negative tweets percentage: {}%".format(100*len(neg_tweets)/len(tweets1))                
         # adding the percentages to the prediction array to be shown in the html page.
         arr_pred.append(pos)
         arr_pred.append(neg)
@@ -101,6 +110,21 @@ def prediction(request):
         arr_neg_txt.append("Negative tweets:")
         for tweet in neg_tweets[:5]:
             arr_neg_txt.append(tweet['text'])
+
+          
+
+        query_data = TweetQuery(
+            owner= request.user,
+            query = t
+        )
+        query_data.save()
+
+        for i in tweets1:
+            tweet_data = Tweets(
+                tweet=i['text'],
+                query=TweetQuery.objects.get(query=t)
+            )
+            tweet_data.save()
 
         return render(request,'prediction.html',{'arr_pred':arr_pred,'arr_pos_txt':arr_pos_txt,'arr_neg_txt':arr_neg_txt})
 
