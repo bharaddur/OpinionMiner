@@ -111,7 +111,7 @@ def prediction(request):
         for tweet in neg_tweets[:5]:
             arr_neg_txt.append(tweet['text'])
 
-          
+        ######### current query almayı öğren
 
         query_data = TweetQuery(
             owner= request.user,
@@ -122,9 +122,11 @@ def prediction(request):
         for i in tweets1:
             tweet_data = Tweets(
                 tweet=i['text'],
-                query=TweetQuery.objects.get(query=t)
+                query=TweetQuery.objects.filter(owner=request.user, query=t).last()
             )
             tweet_data.save()
+
+        ########
 
         return render(request,'prediction.html',{'arr_pred':arr_pred,'arr_pos_txt':arr_pos_txt,'arr_neg_txt':arr_neg_txt})
 
