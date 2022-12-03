@@ -15,7 +15,7 @@ admin.site.register(TweetQuery, AdminTweetQuery)
 
 class AdminTweets(admin.ModelAdmin):
     model= Tweets
-    list_display = ('query', 'tweet','sentiment')
+    list_display = ('user','query','tweet','sentiment','location')
     list_filter = ('query','sentiment')
 
 admin.site.register(Tweets, AdminTweets)

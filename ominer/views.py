@@ -66,7 +66,8 @@ class TwitterSentClass():
                 parsed_tweet = {}
                 parsed_tweet['user'] = tweet.user.screen_name
                 parsed_tweet['text'] = tweet.text
-                parsed_tweet['sentiment'] =self.get_sentiment(tweet.text)
+                parsed_tweet['sentiment'] = self.get_sentiment(tweet.text)
+                parsed_tweet['location'] = tweet.user.location
                 if tweet.retweet_count > 0:
                     if parsed_tweet not in tweets:
                         tweets.append(parsed_tweet)
@@ -131,7 +132,9 @@ def prediction(request):
             tweet_data = Tweets(
                 tweet=i['text'],
                 query=TweetQuery.objects.filter(owner=request.user, query=t).last(),
-                sentiment=i['sentiment']
+                sentiment=i['sentiment'],
+                user=i['user'],
+                location = i['location']
             )
             tweet_data.save()
 

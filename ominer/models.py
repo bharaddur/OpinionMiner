@@ -17,6 +17,7 @@ class Tweets(models.Model):
     tweet = models.TextField(max_length=280)
     sentiment = models.TextField(max_length=15)
     user = models.TextField(max_length=100)
+    location = models.TextField(max_length=100,null=True, blank=True)
 
     def __str__(self):
          return self.tweet
