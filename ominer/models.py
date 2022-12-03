@@ -15,6 +15,8 @@ class Tweets(models.Model):
     
     query = models.ForeignKey(TweetQuery,default=None, on_delete=models.CASCADE)
     tweet = models.TextField(max_length=280)
+    sentiment = models.TextField(max_length=15)
+    user = models.TextField(max_length=100)
 
     def __str__(self):
          return self.tweet

@@ -64,6 +64,7 @@ class TwitterSentClass():
             fetched_tweets = self.api.search_tweets(q = filtered, lang="en", count = count)
             for tweet in fetched_tweets:
                 parsed_tweet = {}
+                parsed_tweet['user'] = tweet.user.screen_name
                 parsed_tweet['text'] = tweet.text
                 parsed_tweet['sentiment'] =self.get_sentiment(tweet.text)
                 if tweet.retweet_count > 0:
@@ -99,7 +100,11 @@ def prediction(request):
         pos = "Positive tweets percentage: {} %".format(100*len(pos_tweets)/len(tweets1))
 
         neg_tweets = [tweet for tweet in tweets1 if tweet['sentiment'] == 'negative']
-        neg="Negative tweets percentage: {}%".format(100*len(neg_tweets)/len(tweets1))                
+        neg="Negative tweets percentage: {}%".format(100*len(neg_tweets)/len(tweets1))
+
+        neut_tweets = [tweet for tweet in tweets1 if tweet['sentiment'] == 'neutral']
+        neut="Neutral tweets percentage: {}%".format(100*len(neut_tweets)/len(tweets1))
+
         # adding the percentages to the prediction array to be shown in the html page.
         arr_pred.append(pos)
         arr_pred.append(neg)
@@ -125,7 +130,8 @@ def prediction(request):
         for i in tweets1:
             tweet_data = Tweets(
                 tweet=i['text'],
-                query=TweetQuery.objects.filter(owner=request.user, query=t).last()
+                query=TweetQuery.objects.filter(owner=request.user, query=t).last(),
+                sentiment=i['sentiment']
             )
             tweet_data.save()
 
