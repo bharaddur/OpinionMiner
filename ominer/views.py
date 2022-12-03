@@ -58,7 +58,10 @@ class TwitterSentClass():
     def get_tweets(self, qu, count):
         tweets = []
         try:
-            fetched_tweets = self.api.search_tweets(q = qu, count = count)
+            #filter the query to remove retweets
+            filtered = qu + "-filter:retweets"
+            
+            fetched_tweets = self.api.search_tweets(q = filtered, lang="en", count = count)
             for tweet in fetched_tweets:
                 parsed_tweet = {}
                 parsed_tweet['text'] = tweet.text
