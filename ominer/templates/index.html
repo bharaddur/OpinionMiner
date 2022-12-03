@@ -1,9 +1,15 @@
+{% extends 'users/base.html' %}
+{% load crispy_forms_tags %}
+{% load static %}
+
+{% block content %}
 <html>
 	<body>
 		<form action="hit" method="post">
 			{% csrf_token %}
 			{{ ff.as_p }}<br>
-			<button type="submit">Predict</button>
+			<button type="submit">Collect Tweets</button>
 		</form>
 	</body>
 </html>
+{% endblock %}

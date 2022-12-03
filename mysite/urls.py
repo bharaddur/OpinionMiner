@@ -21,5 +21,7 @@ urlpatterns = [
     path('admin/', admin.site.urls),
     path('tweet', show),
     path('hit', prediction),
+    path('queries', queries),
     path('', include('users.urls')),
+
 ]

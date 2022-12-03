@@ -69,8 +69,10 @@ class TwitterSentClass():
             
             #fetched_tweets = self.api.search_tweets(q = filtered, lang="en", count = count)
 
-            for t in tweepy.Cursor(self.api.search_tweets, q=filtered,
-                           tweet_mode='extended').items(limit):
+            for t in tweepy.Cursor(self.api.search_tweets,
+                                    q=filtered,
+                                    count = count,
+                                    tweet_mode='extended').items():
                 
                 fetched_tweets.append(t)
                 i += 1
@@ -104,6 +106,15 @@ def show(request):
     form = TwitterForm()
     return render(request,'index.html',{'ff':form})
 
+
+def queries(request):
+    data = TweetQuery.objects.filter(owner=request.user)
+
+    query = {
+        "queries": data
+    }
+
+    return render(request,'queries.html', query)
             
 def prediction(request):
     arr_pred = []
