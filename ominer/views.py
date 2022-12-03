@@ -6,7 +6,7 @@ from ominer.models import TweetQuery, Tweets
 
 from django.contrib.auth.models import User
 
-
+import json
 import environ
 import re
 import pandas as pd
@@ -141,6 +141,7 @@ def prediction(request):
 
         for i in tweets1:
             tweet_data = Tweets(
+                queryowner=request.user,
                 tweet=i['text'],
                 query=TweetQuery.objects.filter(owner=request.user, query=t).last(),
                 sentiment=i['sentiment'],
@@ -163,6 +164,20 @@ def prediction(request):
         # adding the percentages to the prediction array to be shown in the html page.
         arr_pred.append(pos)
         arr_pred.append(neg)
+        arr_pred.append(neut)
+
+        values = []
+        positive = 100*len(pos_tweets)/len(tweets1)
+        negative = 100*len(neg_tweets)/len(tweets1)
+        neutral = 100*len(neut_tweets)/len(tweets1)
+
+
+        values.append(positive)
+        values.append(negative)
+        values.append(neutral)
+
+        mylist = json.dumps(values)
+        
         
         # storing first 5 positive tweets
         arr_pos_txt.append("Positive tweets:")
@@ -175,7 +190,7 @@ def prediction(request):
             arr_neg_txt.append(tweet['text'])
 
 
-        return render(request,'prediction.html',{'arr_pred':arr_pred,'arr_pos_txt':arr_pos_txt,'arr_neg_txt':arr_neg_txt})
+        return render(request,'prediction.html',{'values':mylist,'arr_pred':arr_pred,'arr_pos_txt':arr_pos_txt,'arr_neg_txt':arr_neg_txt})
 
 
 
