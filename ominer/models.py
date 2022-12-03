@@ -7,6 +7,7 @@ from django.conf import settings
 class TweetQuery(models.Model):
     owner = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE)
     query = models.TextField(max_length=255)
+    date = models.DateTimeField(auto_now_add=True, blank=True, null=True)
 
     def __str__(self):
          return self.query

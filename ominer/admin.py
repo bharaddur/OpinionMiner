@@ -7,7 +7,7 @@ from .models import TweetQuery, Tweets
 
 class AdminTweetQuery(admin.ModelAdmin):
     model= TweetQuery
-    list_display = ('owner','query')
+    list_display = ('owner','query','date')
     list_filter = ('owner',)
 
 admin.site.register(TweetQuery, AdminTweetQuery)
