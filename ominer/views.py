@@ -108,10 +108,15 @@ def show(request):
 
 
 def queries(request):
-    data = TweetQuery.objects.filter(owner=request.user)
+    querydata = TweetQuery.objects.filter(owner=request.user)
+    querycounts = []
+    for query in querydata:
+        tweetdata = Tweets.objects.filter(queryowner=request.user, query=query).count
+        querycounts.append(tweetdata)
 
     query = {
-        "queries": data
+        "queries": querydata,
+        "tweetcount": querycounts
     }
 
     return render(request,'queries.html', query)
