@@ -5,6 +5,18 @@ from django.contrib import admin
 
 from .models import TweetQuery, Tweets
 
-admin.site.register(TweetQuery)
-admin.site.register(Tweets)
+class AdminTweetQuery(admin.ModelAdmin):
+    model= TweetQuery
+    list_display = ('owner','query')
+    list_filter = ('owner',)
+
+admin.site.register(TweetQuery, AdminTweetQuery)
+
+
+class AdminTweets(admin.ModelAdmin):
+    model= Tweets
+    list_display = ('query', 'tweet')
+    list_filter = ('query',)
+
+admin.site.register(Tweets, AdminTweets)
 
