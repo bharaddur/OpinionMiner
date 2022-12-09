@@ -20,8 +20,8 @@ from ominer.views import *
 urlpatterns = [
     path('admin/', admin.site.urls),
     path('tweet', show),
-    path('hit', prediction),
-    path('queries', queries),
+    path('collected', collect),
+    path('queries', queries, name='queries'),
     path('', include('users.urls')),
 
 ]

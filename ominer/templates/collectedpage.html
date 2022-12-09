@@ -1,0 +1,22 @@
+{% extends 'users/base.html' %}
+{% load crispy_forms_tags %}
+{% load static %}
+
+{% block content %}
+<html>
+	<head>
+		<title>Your query was successful</title>
+		
+	</head>
+	<body>
+		<form action="" method="post">
+			{% csrf_token %}
+			<p>Your query was successfull please go to your queries page</p>
+			<a href='{% url 'queries' %}' class="btn" style="color: white; background-color: #fd5e14;"type="submit" id="body-link-row">Queries</a>
+
+		</form>
+	</body>
+</html>
+
+
+{% endblock %}

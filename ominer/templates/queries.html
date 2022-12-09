@@ -8,13 +8,12 @@
         <p id="header-paragraph">Here you can view your all queries</p>
             <div class="btn-group-vertical">               
                 <ul class="list-group list-group-horizontal-lg"></ul>
-                {% for query in queries %}{% for count in tweetcount %}
-                {% if forloop.counter == forloop.parentloop.counter %}
+                {% for query in queries %}
+                
                     <a class="btn" style="color: white; background-color: #fd5e14; margin: 10px"type="submit" id="body-link-row">{{query.query}}</a>
                     <p>{{query.date}}</p>
-                    <p>{{count}}</p>  
-                    {% endif %}
-                  {% endfor %}{% endfor %}
+                    <p>{{query.count}}</p>  
+                  {% endfor %}
             </ul>
                 
             </div>

@@ -17,6 +17,9 @@ import tweepy
 import os
 from tweepy import OAuthHandler
 from textblob import TextBlob
+
+from . import wordcloud
+
 # Create your views here.
 
 # Create your views here.
@@ -46,7 +49,7 @@ class TwitterSentClass():
             return ""
             
         return ' '.join(re.sub("(@[A-Za-z0-9]+)|([^0-9A-Za-z \t])|(\w+:\/\/\S+)"
-                               , " ", tweet).split())
+                               , " ", tweet.lower()).split())
  
     def get_sentiment(self, tweet):
         analysis = TextBlob(self.cleaning_process(tweet))
@@ -66,11 +69,10 @@ class TwitterSentClass():
         try:
             #filter the query to remove retweets
             filtered = qu + "-filter:retweets"
-            
-            #fetched_tweets = self.api.search_tweets(q = filtered, lang="en", count = count)
 
             for t in tweepy.Cursor(self.api.search_tweets,
                                     q=filtered,
+                                    lang='en',
                                     count = count,
                                     tweet_mode='extended').items():
                 
@@ -85,6 +87,7 @@ class TwitterSentClass():
                 parsed_tweet = {}
                 parsed_tweet['user'] = tweet.user.screen_name
                 parsed_tweet['text'] = tweet.full_text
+                parsed_tweet['cleaned_text'] = TextBlob(self.cleaning_process(tweet.full_text))
                 parsed_tweet['sentiment'] = self.get_sentiment(tweet.full_text)
                 parsed_tweet['location'] = tweet.user.location
                 if tweet.retweet_count > 0:
@@ -99,7 +102,6 @@ class TwitterSentClass():
             print("Error : " + str(e))
 
 
-
 # Create your views here.
 
 def show(request):
@@ -108,20 +110,16 @@ def show(request):
 
 
 def queries(request):
-    querydata = TweetQuery.objects.filter(owner=request.user)
-    querycounts = []
-    for query in querydata:
-        tweetdata = Tweets.objects.filter(queryowner=request.user, query=query).count
-        querycounts.append(tweetdata)
+    querydata = TweetQuery.objects.filter(owner=request.user).order_by('-date')
 
     query = {
         "queries": querydata,
-        "tweetcount": querycounts
     }
 
     return render(request,'queries.html', query)
-            
-def prediction(request):
+
+
+def collect(request):
     arr_pred = []
     arr_pos_txt = []
     arr_neg_txt = []
@@ -135,7 +133,8 @@ def prediction(request):
 
         query_data = TweetQuery(
             owner= request.user,
-            query = t
+            query = t,
+            count = len(tweets1)
         )
         query_data.save()
 
@@ -146,11 +145,15 @@ def prediction(request):
                 query=TweetQuery.objects.filter(owner=request.user, query=t).last(),
                 sentiment=i['sentiment'],
                 user=i['user'],
-                location = i['location']
+                location = i['location'],
+                cleaned_tweet = i['cleaned_text']
             )
             tweet_data.save()
 
         ########
+
+        # get cleaned_tweets from database and create a wordcloud
+        
 
         pos_tweets = [tweet for tweet in tweets1 if tweet['sentiment'] == 'positive']
         pos = "Positive tweets percentage: {} %".format(100*len(pos_tweets)/len(tweets1))
@@ -190,7 +193,7 @@ def prediction(request):
             arr_neg_txt.append(tweet['text'])
 
 
-        return render(request,'prediction.html',{'values':mylist,'arr_pred':arr_pred,'arr_pos_txt':arr_pos_txt,'arr_neg_txt':arr_neg_txt})
+        return render(request,'collectedpage.html',{'values':mylist,'arr_pred':arr_pred,'arr_pos_txt':arr_pos_txt,'arr_neg_txt':arr_neg_txt})
 
 
 

@@ -7,3 +7,4 @@ matplotlib
 django-environ
 psycopg2
 django-crispy-forms
+wordcloud
