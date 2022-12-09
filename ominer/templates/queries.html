@@ -10,7 +10,7 @@
                 <ul class="list-group list-group-horizontal-lg"></ul>
                 {% for query in queries %}
                 
-                    <a class="btn" style="color: white; background-color: #fd5e14; margin: 10px"type="submit" id="body-link-row">{{query.query}}</a>
+                    <a href='{% url 'query_detail' pk=query.pk %}' class="btn" style="color: white; background-color: #fd5e14; margin: 10px"type="submit" id="body-link-row">{{query.query}}</a>
                     <p>{{query.date}}</p>
                     <p>{{query.count}}</p>  
                   {% endfor %}

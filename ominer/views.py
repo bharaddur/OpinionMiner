@@ -1,6 +1,7 @@
 from django.shortcuts import render
 from django.http import *
 from ominer.forms import *
+from django.shortcuts import render, get_object_or_404
 
 from ominer.models import TweetQuery, Tweets
 
@@ -111,18 +112,41 @@ def show(request):
 
 def queries(request):
     querydata = TweetQuery.objects.filter(owner=request.user).order_by('-date')
-
+    
     query = {
         "queries": querydata,
     }
-
+        
     return render(request,'queries.html', query)
 
 
+def query_detail(request, pk):
+    query = get_object_or_404(TweetQuery, pk=pk)
+
+    tweetdata = Tweets.objects.all().filter(query=pk)
+
+            # get cleaned_tweets from database and create a wordcloud
+    pos_tweets = Tweets.objects.filter(query=pk, sentiment='positive')
+    neg_tweets = Tweets.objects.filter(query=pk, sentiment='negative')
+    neut_tweets = Tweets.objects.filter(query=pk, sentiment='neutral')
+
+        # adding the percentages to the prediction array to be shown in the html page.
+    values = []
+    positive = 100*len(pos_tweets)/len(tweetdata)
+    negative = 100*len(neg_tweets)/len(tweetdata)
+    neutral = 100*len(neut_tweets)/len(tweetdata)
+
+
+    values.append(positive)
+    values.append(negative)
+    values.append(neutral)
+
+    mylist = json.dumps(values)
+    return render(request, 'queryreport.html', {'values':mylist,'query': query})
+
+
 def collect(request):
-    arr_pred = []
-    arr_pos_txt = []
-    arr_neg_txt = []
+
     if request.method == 'POST' :
         api = TwitterSentClass()
         t = request.POST['Keyword']
@@ -149,51 +173,8 @@ def collect(request):
                 cleaned_tweet = i['cleaned_text']
             )
             tweet_data.save()
-
-        ########
-
-        # get cleaned_tweets from database and create a wordcloud
         
-
-        pos_tweets = [tweet for tweet in tweets1 if tweet['sentiment'] == 'positive']
-        pos = "Positive tweets percentage: {} %".format(100*len(pos_tweets)/len(tweets1))
-
-        neg_tweets = [tweet for tweet in tweets1 if tweet['sentiment'] == 'negative']
-        neg="Negative tweets percentage: {}%".format(100*len(neg_tweets)/len(tweets1))
-
-        neut_tweets = [tweet for tweet in tweets1 if tweet['sentiment'] == 'neutral']
-        neut="Neutral tweets percentage: {}%".format(100*len(neut_tweets)/len(tweets1))
-
-        # adding the percentages to the prediction array to be shown in the html page.
-        arr_pred.append(pos)
-        arr_pred.append(neg)
-        arr_pred.append(neut)
-
-        values = []
-        positive = 100*len(pos_tweets)/len(tweets1)
-        negative = 100*len(neg_tweets)/len(tweets1)
-        neutral = 100*len(neut_tweets)/len(tweets1)
-
-
-        values.append(positive)
-        values.append(negative)
-        values.append(neutral)
-
-        mylist = json.dumps(values)
-        
-        
-        # storing first 5 positive tweets
-        arr_pos_txt.append("Positive tweets:")
-        for tweet in pos_tweets[:5]:
-            arr_pos_txt.append(tweet['text'])
-
-        # storing first 5 negative tweets
-        arr_neg_txt.append("Negative tweets:")
-        for tweet in neg_tweets[:5]:
-            arr_neg_txt.append(tweet['text'])
-
-
-        return render(request,'collectedpage.html',{'values':mylist,'arr_pred':arr_pred,'arr_pos_txt':arr_pos_txt,'arr_neg_txt':arr_neg_txt})
+        return render(request, 'collectedpage.html', {'tweets': tweets1})
 
 
 

@@ -22,6 +22,7 @@ urlpatterns = [
     path('tweet', show),
     path('collected', collect),
     path('queries', queries, name='queries'),
+    path('queries/<int:pk>/', query_detail, name='query_detail'),
     path('', include('users.urls')),
 
 ]
