@@ -22,6 +22,9 @@ class Tweets(models.Model):
     sentiment = models.TextField(max_length=15)
     user = models.TextField(max_length=100)
     location = models.TextField(max_length=100,null=True, blank=True)
+    like_count = models.IntegerField(default=0)
+    retweet_count = models.IntegerField(default=0)
+    date = models.DateTimeField(blank=True, null=True)
 
     def __str__(self):
          return self.tweet

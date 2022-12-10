@@ -91,6 +91,9 @@ class TwitterSentClass():
                 parsed_tweet['cleaned_text'] = TextBlob(self.cleaning_process(tweet.full_text))
                 parsed_tweet['sentiment'] = self.get_sentiment(tweet.full_text)
                 parsed_tweet['location'] = tweet.user.location
+                parsed_tweet['like_count'] = tweet.favorite_count
+                parsed_tweet['retweet_count'] = tweet.retweet_count
+                parsed_tweet['date'] = tweet.created_at
                 if tweet.retweet_count > 0:
                     if parsed_tweet not in tweets:
                         tweets.append(parsed_tweet)
@@ -130,11 +133,12 @@ def query_detail(request, pk):
     neg_tweets = Tweets.objects.filter(query=pk, sentiment='negative')
     neut_tweets = Tweets.objects.filter(query=pk, sentiment='neutral')
 
-        # adding the percentages to the prediction array to be shown in the html page.
+        # adding the percentages to the prediction array to be shown in the html page.  
+
     values = []
-    positive = 100*len(pos_tweets)/len(tweetdata)
-    negative = 100*len(neg_tweets)/len(tweetdata)
-    neutral = 100*len(neut_tweets)/len(tweetdata)
+    positive = round(100*len(pos_tweets)/len(tweetdata),2)
+    negative = round(100*len(neg_tweets)/len(tweetdata),2)
+    neutral = round(100*len(neut_tweets)/len(tweetdata),2)
 
 
     values.append(positive)
@@ -142,7 +146,7 @@ def query_detail(request, pk):
     values.append(neutral)
 
     mylist = json.dumps(values)
-    return render(request, 'queryreport.html', {'values':mylist,'query': query})
+    return render(request, 'queryreport.html', {'values':mylist,'query': query, 'tweetdata': tweetdata})
 
 
 def collect(request):
@@ -170,7 +174,11 @@ def collect(request):
                 sentiment=i['sentiment'],
                 user=i['user'],
                 location = i['location'],
-                cleaned_tweet = i['cleaned_text']
+                cleaned_tweet = i['cleaned_text'],
+                like_count = i['like_count'],
+                retweet_count = i['retweet_count'],
+                date = i['date']
+                
             )
             tweet_data.save()
         
