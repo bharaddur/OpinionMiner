@@ -94,6 +94,8 @@ class TwitterSentClass():
                 parsed_tweet['like_count'] = tweet.favorite_count
                 parsed_tweet['retweet_count'] = tweet.retweet_count
                 parsed_tweet['date'] = tweet.created_at
+                parsed_tweet['entities']= tweet.entities
+                parsed_tweet['context_annotations'] = tweet.context_annotations
                 if tweet.retweet_count > 0:
                     if parsed_tweet not in tweets:
                         tweets.append(parsed_tweet)
@@ -177,7 +179,10 @@ def collect(request):
                 cleaned_tweet = i['cleaned_text'],
                 like_count = i['like_count'],
                 retweet_count = i['retweet_count'],
-                date = i['date']
+                date = i['date'],
+                entities = i['entities'],
+                context_annotations = i['context_annotations'],
+
                 
             )
             tweet_data.save()
