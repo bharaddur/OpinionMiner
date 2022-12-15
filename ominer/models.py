@@ -26,7 +26,8 @@ class Tweets(models.Model):
     retweet_count = models.IntegerField(default=0)
     date = models.DateTimeField(blank=True, null=True)
     entities = models.TextField(max_length=280, blank=True, null=True)
-    context_annotations = models.TextField(max_length=280, blank=True, null=True)
+    context_annotations = models.TextField(max_length=1000, blank=True, null=True)
+    author_id = models.TextField(max_length=280, blank=True, null=True)
 
     def __str__(self):
          return self.tweet

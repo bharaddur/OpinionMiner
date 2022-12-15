@@ -18,6 +18,10 @@ import tweepy
 import os
 from tweepy import OAuthHandler
 from textblob import TextBlob
+import logging
+import requests
+from twarc.client2 import Twarc2
+from twarc.expansions import ensure_flattened
 
 from . import wordcloud
 
@@ -33,7 +37,8 @@ class TwitterSentClass():
         API_key = env('API_KEY')
         API_secret = env('API_SECRET')
         access_token = env('ACCESS_TOKEN')
-        access_token_secret = env('ACCESS_TOKEN_SECRET')  
+        access_token_secret = env('ACCESS_TOKEN_SECRET')
+        bearer_tokenenv = env('BEARER_TOKEN')  
         
         try:
             self.auth = OAuthHandler(API_key, 
@@ -41,6 +46,15 @@ class TwitterSentClass():
             self.auth.set_access_token(access_token,
                                        access_token_secret)
             self.api = tweepy.API(self.auth)
+
+            self.client = tweepy.Client(bearer_tokenenv, 
+                       API_key, 
+                       API_secret, 
+                       access_token, 
+                       access_token_secret)
+
+            self.twarc = Twarc2(bearer_token=bearer_tokenenv)
+
             print('Authenticated')
         except:
             print("Sorry! Error in authentication!")
@@ -65,42 +79,58 @@ class TwitterSentClass():
     def get_tweets(self, qu, count):
         tweets = []
         fetched_tweets = []
-        limit = int(count)
-        i = 0 
-        try:
-            #filter the query to remove retweets
-            filtered = qu + "-filter:retweets"
 
-            for t in tweepy.Cursor(self.api.search_tweets,
-                                    q=filtered,
-                                    lang='en',
-                                    count = count,
-                                    tweet_mode='extended').items():
-                
-                fetched_tweets.append(t)
+        try:
+            filtered = qu +" lang:en -is:retweet"
+            
+            if int(count)<=100:
+                max = int(count)
+                limit = 1
+            else:
+                limit = int(count)/100
+                max = 100
+
+            search_results = self.twarc.search_recent(query=filtered, max_results=max)
+
+            i = 0
+            for page in search_results:
                 i += 1
-                if i>= limit:
+                # Do something with the whole page of results.
+                for tweet in ensure_flattened(page):
+                    # Do something with the tweet
+                    fetched_tweets.append(tweet)
+                if i == limit:
+                # Stop iteration prematurely, to only get 1 page of results.
                     break
-                else:
-                    pass
 
             for tweet in fetched_tweets:
+
                 parsed_tweet = {}
-                parsed_tweet['user'] = tweet.user.screen_name
-                parsed_tweet['text'] = tweet.full_text
-                parsed_tweet['cleaned_text'] = TextBlob(self.cleaning_process(tweet.full_text))
-                parsed_tweet['sentiment'] = self.get_sentiment(tweet.full_text)
-                parsed_tweet['location'] = tweet.user.location
-                parsed_tweet['like_count'] = tweet.favorite_count
-                parsed_tweet['retweet_count'] = tweet.retweet_count
-                parsed_tweet['date'] = tweet.created_at
-                parsed_tweet['entities']= tweet.entities
-                parsed_tweet['context_annotations'] = tweet.context_annotations
-                if tweet.retweet_count > 0:
-                    if parsed_tweet not in tweets:
-                        tweets.append(parsed_tweet)
+                parsed_tweet['author_id'] = tweet['author_id']
+                parsed_tweet['username'] = tweet['author']['username']
+                parsed_tweet['text'] = tweet['text']
+                parsed_tweet['cleaned_text'] = TextBlob(self.cleaning_process(tweet['text']))
+                parsed_tweet['sentiment'] = self.get_sentiment(tweet['text'])
+                parsed_tweet['like_count'] = tweet['public_metrics']['like_count']
+                parsed_tweet['retweet_count'] = tweet['public_metrics']['retweet_count']
+                parsed_tweet['date'] = tweet['created_at']
+                parsed_tweet['entities'] = 'entity'
+                parsed_tweet['id'] = tweet['id']
+                if tweet['author'].get('location') is not None:
+                    parsed_tweet['location'] = tweet['author']['location']
                 else:
-                    tweets.append(parsed_tweet)
+                    parsed_tweet['location'] = 'None'
+                
+                #convert to string
+                if tweet.get('context_annotations') is None:
+                   parsed_tweet['context_annotation'] = 'None'
+                else:
+                    contextannotation = json.dumps(tweet['context_annotations'])
+                    parsed_tweet['context_annotation'] = contextannotation
+           
+
+              
+                tweets.append(parsed_tweet)
 
             return tweets
             
@@ -151,6 +181,7 @@ def query_detail(request, pk):
     return render(request, 'queryreport.html', {'values':mylist,'query': query, 'tweetdata': tweetdata})
 
 
+
 def collect(request):
 
     if request.method == 'POST' :
@@ -174,20 +205,22 @@ def collect(request):
                 tweet=i['text'],
                 query=TweetQuery.objects.filter(owner=request.user, query=t).last(),
                 sentiment=i['sentiment'],
-                user=i['user'],
+                user=i['username'],
+                author_id = i['author_id'],
                 location = i['location'],
                 cleaned_tweet = i['cleaned_text'],
                 like_count = i['like_count'],
                 retweet_count = i['retweet_count'],
                 date = i['date'],
                 entities = i['entities'],
-                context_annotations = i['context_annotations'],
+                context_annotations = i['context_annotation'],
 
                 
             )
             tweet_data.save()
         
         return render(request, 'collectedpage.html', {'tweets': tweets1})
+
 
 
 
