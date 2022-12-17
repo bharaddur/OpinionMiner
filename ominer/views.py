@@ -8,6 +8,8 @@ from ominer.models import TweetQuery, Tweets
 from django.contrib.auth.models import User
 
 import json
+import nltk
+from nltk.corpus import stopwords
 import environ
 import re
 import pandas as pd
@@ -23,16 +25,15 @@ import requests
 from twarc.client2 import Twarc2
 from twarc.expansions import ensure_flattened
 
-from . import wordcloud
 
-# Create your views here.
-
-# Create your views here.
 # Initialise environment variables
 env = environ.Env()
 environ.Env.read_env()
 
 class TwitterSentClass():
+
+    # class constructor
+
     def __init__(self):
         API_key = env('API_KEY')
         API_secret = env('API_SECRET')
@@ -58,14 +59,18 @@ class TwitterSentClass():
             print('Authenticated')
         except:
             print("Sorry! Error in authentication!")
- 
+
+
+    # function to clean tweet text by removing links, special characters using simple regex statements.
     def cleaning_process(self, tweet):
         if type(tweet) == np.float:
             return ""
             
         return ' '.join(re.sub("(@[A-Za-z0-9]+)|([^0-9A-Za-z \t])|(\w+:\/\/\S+)"
                                , " ", tweet.lower()).split())
- 
+    
+    # function to get sentiment of a tweet
+
     def get_sentiment(self, tweet):
         analysis = TextBlob(self.cleaning_process(tweet))
         if analysis.sentiment.polarity > 0:
@@ -75,7 +80,8 @@ class TwitterSentClass():
         else:
             return 'negative'
 
- 
+    # function to get tweets and store them in a dataframe sentiment function is also called here
+
     def get_tweets(self, qu, count):
         tweets = []
         fetched_tweets = []
@@ -138,12 +144,14 @@ class TwitterSentClass():
             print("Error : " + str(e))
 
 
-# Create your views here.
+# Form page that takes the query and number of tweets
 
 def show(request):
     form = TwitterForm()
     return render(request,'index.html',{'ff':form})
 
+
+# Query page that shows the queries that has been done previously
 
 def queries(request):
     querydata = TweetQuery.objects.filter(owner=request.user).order_by('-date')
@@ -154,18 +162,43 @@ def queries(request):
         
     return render(request,'queries.html', query)
 
-
+# Detail page that shows the details of the query in a dashboard
 def query_detail(request, pk):
     query = get_object_or_404(TweetQuery, pk=pk)
 
-    tweetdata = Tweets.objects.all().filter(query=pk)
+    tweetdata = Tweets.objects.filter(query=pk)
 
-            # get cleaned_tweets from database and create a wordcloud
+
+    stop_words = set(stopwords.words('english'))
+
+    querytext = TweetQuery.objects.get(pk=pk)
+    additionalstop_words = nltk.word_tokenize(querytext.query)
+    
+    for word in additionalstop_words:
+        stop_words.add(word.lower())
+
+
+    # get cleaned_tweets from database and create a wordcloud
+
+
+    # length of wordcloudtweets array
+
+
+    # get cleaned_tweets from database and create a wordcloud
     pos_tweets = Tweets.objects.filter(query=pk, sentiment='positive')
     neg_tweets = Tweets.objects.filter(query=pk, sentiment='negative')
     neut_tweets = Tweets.objects.filter(query=pk, sentiment='neutral')
 
-        # adding the percentages to the prediction array to be shown in the html page.  
+    negtext = neg_tweets.values_list('cleaned_tweet', flat=True)
+    wordcloudneg = word_cloud_view(negtext, stop_words)
+
+
+    postext =  pos_tweets.values_list('cleaned_tweet', flat=True)
+    wordcloudpos = word_cloud_view(postext, stop_words)
+
+    
+
+    # adding the percentages to the prediction array to be shown in the html page.  
 
     values = []
     positive = round(100*len(pos_tweets)/len(tweetdata),2)
@@ -178,9 +211,10 @@ def query_detail(request, pk):
     values.append(neutral)
 
     mylist = json.dumps(values)
-    return render(request, 'queryreport.html', {'values':mylist,'query': query, 'tweetdata': tweetdata})
+    return render(request, 'queryreport.html', {'values':mylist,'query': query, 'tweetdata': tweetdata, 'wordcloudpos': wordcloudpos, 'wordcloudneg': wordcloudneg})
 
 
+# Collect function that collects the tweets and stores them in the database
 
 def collect(request):
 
@@ -223,4 +257,33 @@ def collect(request):
 
 
 
+
+# Wordcloud function that creates necessary values to send to the html page
+
+def word_cloud_view(sentences, stopwords):
+    # Tokenize the sentences and count the frequencies of the words
+    word_counts = {}
+    for sentence in sentences:
+        # Tokenize the sentence and remove stopwords
+        tokens = nltk.word_tokenize(sentence)
+        tokens = [token for token in tokens if token.lower() not in stopwords]
+
+        # Count the frequency of each token
+        for token in tokens:
+            if token in word_counts:
+                word_counts[token] += 1
+            else:
+                word_counts[token] = 1
+
+    # Sort the word counts in descending order
+    sorted_word_counts = sorted(word_counts.items(), key=lambda x: x[1], reverse=True)
+
+    # Limit the number of words to the first 100
+    words = sorted_word_counts[:100]
+
+    # Convert the word counts into a 2d array of objects suitable for the wordcloud2.js library
+    words = [[w, c] for w, c in words]
+
+    # Render the template and pass the data as context
+    return words
 

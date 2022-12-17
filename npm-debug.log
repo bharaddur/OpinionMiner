@@ -1,0 +1,74 @@
+0 info it worked if it ends with ok
+1 verbose cli [ '/usr/local/bin/node',
+1 verbose cli   '/usr/local/bin/npm',
+1 verbose cli   'install',
+1 verbose cli   'wordcloud2.js' ]
+2 info using npm@2.14.12
+3 info using node@v4.3.0
+4 verbose install initial load of /Users/mcgeyik/SWE599/package.json
+5 verbose readDependencies loading dependencies from /Users/mcgeyik/SWE599/package.json
+6 silly cache add args [ 'wordcloud2.js', null ]
+7 verbose cache add spec wordcloud2.js
+8 silly cache add parsed spec Result {
+8 silly cache add   raw: 'wordcloud2.js',
+8 silly cache add   scope: null,
+8 silly cache add   name: 'wordcloud2.js',
+8 silly cache add   rawSpec: '',
+8 silly cache add   spec: 'latest',
+8 silly cache add   type: 'tag' }
+9 silly addNamed wordcloud2.js@latest
+10 verbose addNamed "latest" is being treated as a dist-tag for wordcloud2.js
+11 info addNameTag [ 'wordcloud2.js', 'latest' ]
+12 silly mapToRegistry name wordcloud2.js
+13 silly mapToRegistry using default registry
+14 silly mapToRegistry registry https://registry.npmjs.org/
+15 silly mapToRegistry uri https://registry.npmjs.org/wordcloud2.js
+16 verbose addNameTag registry:https://registry.npmjs.org/wordcloud2.js not in flight; fetching
+17 verbose request uri https://registry.npmjs.org/wordcloud2.js
+18 verbose request no auth needed
+19 info attempt registry request try #1 at 7:06:58 PM
+20 verbose request id d8ae0ec9f1ee4596
+21 http request GET https://registry.npmjs.org/wordcloud2.js
+22 http 404 https://registry.npmjs.org/wordcloud2.js
+23 verbose headers { date: 'Sat, 17 Dec 2022 16:06:59 GMT',
+23 verbose headers   'content-type': 'application/json',
+23 verbose headers   'content-length': '21',
+23 verbose headers   connection: 'keep-alive',
+23 verbose headers   'cf-ray': '77b0e8b7edc60549-OTP',
+23 verbose headers   vary: 'Accept-Encoding',
+23 verbose headers   server: 'cloudflare' }
+24 silly get cb [ 404,
+24 silly get   { date: 'Sat, 17 Dec 2022 16:06:59 GMT',
+24 silly get     'content-type': 'application/json',
+24 silly get     'content-length': '21',
+24 silly get     connection: 'keep-alive',
+24 silly get     'cf-ray': '77b0e8b7edc60549-OTP',
+24 silly get     vary: 'Accept-Encoding',
+24 silly get     server: 'cloudflare' } ]
+25 verbose stack Error: Not found : wordcloud2.js
+25 verbose stack     at makeError (/usr/local/lib/node_modules/npm/node_modules/npm-registry-client/lib/request.js:264:12)
+25 verbose stack     at CachingRegistryClient.<anonymous> (/usr/local/lib/node_modules/npm/node_modules/npm-registry-client/lib/request.js:252:14)
+25 verbose stack     at Request._callback (/usr/local/lib/node_modules/npm/node_modules/npm-registry-client/lib/request.js:172:14)
+25 verbose stack     at Request.self.callback (/usr/local/lib/node_modules/npm/node_modules/request/request.js:198:22)
+25 verbose stack     at emitTwo (events.js:87:13)
+25 verbose stack     at Request.emit (events.js:172:7)
+25 verbose stack     at Request.<anonymous> (/usr/local/lib/node_modules/npm/node_modules/request/request.js:1082:10)
+25 verbose stack     at emitOne (events.js:82:20)
+25 verbose stack     at Request.emit (events.js:169:7)
+25 verbose stack     at IncomingMessage.<anonymous> (/usr/local/lib/node_modules/npm/node_modules/request/request.js:1009:12)
+26 verbose statusCode 404
+27 verbose pkgid wordcloud2.js
+28 verbose cwd /Users/mcgeyik/SWE599
+29 error Darwin 21.6.0
+30 error argv "/usr/local/bin/node" "/usr/local/bin/npm" "install" "wordcloud2.js"
+31 error node v4.3.0
+32 error npm  v2.14.12
+33 error code E404
+34 error 404 Not found : wordcloud2.js
+34 error 404
+34 error 404 'wordcloud2.js' is not in the npm registry.
+34 error 404 You should bug the author to publish it (or use the name yourself!)
+34 error 404
+34 error 404 Note that you can also install from a
+34 error 404 tarball, folder, http url, or git url.
+35 verbose exit [ 1, true ]

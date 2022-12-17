@@ -11,3 +11,4 @@ wordcloud
 requests
 requests-oauthlib
 twarc
+nltk
