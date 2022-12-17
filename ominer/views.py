@@ -25,6 +25,8 @@ import requests
 from twarc.client2 import Twarc2
 from twarc.expansions import ensure_flattened
 
+from stop_words import get_stop_words
+
 
 # Initialise environment variables
 env = environ.Env()
@@ -169,20 +171,13 @@ def query_detail(request, pk):
     tweetdata = Tweets.objects.filter(query=pk)
 
 
-    stop_words = set(stopwords.words('english'))
+    stop_words = get_stop_words('en')
 
     querytext = TweetQuery.objects.get(pk=pk)
     additionalstop_words = nltk.word_tokenize(querytext.query)
     
     for word in additionalstop_words:
-        stop_words.add(word.lower())
-
-
-    # get cleaned_tweets from database and create a wordcloud
-
-
-    # length of wordcloudtweets array
-
+        stop_words.append(word.lower())
 
     # get cleaned_tweets from database and create a wordcloud
     pos_tweets = Tweets.objects.filter(query=pk, sentiment='positive')
@@ -194,9 +189,7 @@ def query_detail(request, pk):
 
 
     postext =  pos_tweets.values_list('cleaned_tweet', flat=True)
-    wordcloudpos = word_cloud_view(postext, stop_words)
-
-    
+    wordcloudpos = word_cloud_view(postext, stop_words)  
 
     # adding the percentages to the prediction array to be shown in the html page.  
 
@@ -211,7 +204,7 @@ def query_detail(request, pk):
     values.append(neutral)
 
     mylist = json.dumps(values)
-    return render(request, 'queryreport.html', {'values':mylist,'query': query, 'tweetdata': tweetdata, 'wordcloudpos': wordcloudpos, 'wordcloudneg': wordcloudneg})
+    return render(request, 'queryreport.html', {'values':mylist,'query': query, 'tweetdata': tweetdata, 'wordcloudpos': wordcloudpos, 'wordcloudneg': wordcloudneg, 'stop_words': stop_words})
 
 
 # Collect function that collects the tweets and stores them in the database
@@ -266,7 +259,7 @@ def word_cloud_view(sentences, stopwords):
     for sentence in sentences:
         # Tokenize the sentence and remove stopwords
         tokens = nltk.word_tokenize(sentence)
-        tokens = [token for token in tokens if token.lower() not in stopwords]
+        tokens = [token for token in tokens if token.lower() not in stopwords and len(token) > 1]
 
         # Count the frequency of each token
         for token in tokens:
