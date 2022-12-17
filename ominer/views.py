@@ -122,7 +122,7 @@ class TwitterSentClass():
                 parsed_tweet['like_count'] = tweet['public_metrics']['like_count']
                 parsed_tweet['retweet_count'] = tweet['public_metrics']['retweet_count']
                 parsed_tweet['date'] = tweet['created_at']
-                parsed_tweet['entities'] = 'entity'
+                parsed_tweet['followers_count'] = tweet['public_metrics']['followers_count']
                 parsed_tweet['id'] = tweet['id']
                 if tweet['author'].get('location') is not None:
                     parsed_tweet['location'] = tweet['author']['location']
@@ -239,7 +239,7 @@ def collect(request):
                 like_count = i['like_count'],
                 retweet_count = i['retweet_count'],
                 date = i['date'],
-                entities = i['entities'],
+                followers_count = i['followers_count'],
                 context_annotations = i['context_annotation'],
 
                 

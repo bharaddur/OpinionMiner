@@ -7,7 +7,7 @@
         <meta http-equiv="X-UA-Compatible" content="IE=edge" />
         <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no" />
         <!--Css Style -->
-        <link rel="stylesheet" href="{% static '/users/css/styles.css' %}" type="text/css">
+        <link rel="stylesheet" href="{% static '/css/styles.css' %}" type="text/css">
         <title>Home-Twizzard</title>
         <!-- Bootstrap CSS -->
         <link href="https://cdn.jsdelivr.net/npm/simple-datatables@latest/dist/style.css" rel="stylesheet" />
@@ -18,7 +18,7 @@
     </head>
 
     {% load static %}
-    <body class="sb-nav-fixed">
+    <body class="sb-nav-fixed sb-sidenav-toggled" >
         <nav class="sb-topnav navbar navbar-expand navbar-dark bg-dark">
             <!-- Navbar Brand-->
             <a class="navbar-brand ps-3" href="{% url 'home' %}">Home-Twizzard</a>
