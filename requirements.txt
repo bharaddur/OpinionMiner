@@ -13,3 +13,4 @@ requests-oauthlib
 twarc
 nltk
 stop-words
+networkx

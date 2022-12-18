@@ -125,6 +125,50 @@
                         <i class="fas fa-table me-1"></i>
                         Query Tweets
                     </div>
+                    <div class="card-body" style="width: 800px; height: 600px;">
+                        <div id="graph" style="width: 800px; height: 600px;"></div>
+                            <script>
+                            var container = document.getElementById('graph');
+                            var data = {{ graph_json|safe }};
+                            var options = {
+                            nodes: {
+                                shape: 'circle',
+                                size: 20,
+                                color: {
+                                background: '#ffffff',
+                                border: '#2B7CE9',
+                                highlight: {
+                                    background: '#D2E5FF',
+                                    border: '#2B7CE9'
+                                }
+                                },
+                                font: {
+                                size: 14,
+                                color: '#343434'
+                                }
+                            },
+                            edges: {
+                                width: 2,
+                                color: {
+                                color: '#848484',
+                                highlight: '#848484'
+                                },
+                                    font: {
+                                size: 14,
+                                color: '#343434'
+                                }
+                            }
+                            };
+                            var network = new vis.Network(container, data, options);
+                        </script>
+                        
+                    </div>
+                </div>
+                <div class="card mb-4">
+                    <div class="card-header">
+                        <i class="fas fa-table me-1"></i>
+                        Query Tweets
+                    </div>
                     <div class="card-body">
                         <table id="datatablesSimple">
                             <thead>
@@ -167,6 +211,9 @@
     </div>
 </div>
 <p>{{stop_words}}</p>
+
+
+
 
 
     <script src="https://d3js.org/d3.v4.min.js"></script>

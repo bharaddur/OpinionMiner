@@ -27,6 +27,9 @@ from twarc.expansions import ensure_flattened
 
 from stop_words import get_stop_words
 
+import networkx as nx
+from networkx.readwrite import json_graph
+
 
 # Initialise environment variables
 env = environ.Env()
@@ -122,7 +125,7 @@ class TwitterSentClass():
                 parsed_tweet['like_count'] = tweet['public_metrics']['like_count']
                 parsed_tweet['retweet_count'] = tweet['public_metrics']['retweet_count']
                 parsed_tweet['date'] = tweet['created_at']
-                parsed_tweet['followers_count'] = tweet['public_metrics']['followers_count']
+                parsed_tweet['followers_count'] = tweet['author']['public_metrics']['followers_count']
                 parsed_tweet['id'] = tweet['id']
                 if tweet['author'].get('location') is not None:
                     parsed_tweet['location'] = tweet['author']['location']
@@ -171,6 +174,45 @@ def query_detail(request, pk):
     tweetdata = Tweets.objects.filter(query=pk)
 
 
+    g = nx.Graph()
+
+    for tweet in tweetdata:
+        json_string = tweet.context_annotations
+        if json_string != 'None':
+            jsonCA = json.loads(json_string)
+            for i in jsonCA:
+                g.add_node(i['entity']['name'])
+                counter = 0  
+                for j in jsonCA:
+                    if j['entity']['name'] != i['entity']['name']:
+                        g.add_edge(i['entity']['name'], j['entity']['name'])
+                counter += 1
+                if counter == 1:
+                    break           
+                        
+
+    graph_json = json_graph.node_link_data(g)
+
+    for i, node in enumerate(graph_json['nodes']):
+        graph_json['nodes'][i]['id'] = node['id']
+        graph_json['nodes'][i]['label'] = node['id']
+        graph_json['nodes'][i]['font'] = {'size': 14, 'color': 'black'}
+    
+    for i, link in enumerate(graph_json['links']):
+        graph_json['links'][i]['from'] = link['source']
+        graph_json['links'][i]['to'] = link['target']
+        graph_json['links'][i]['label'] = f"Edge {i}"
+        graph_json['links'][i]['font'] = {'size': 14, 'color': 'black'}
+
+    graph_json['edges'] = graph_json.pop("links")
+    
+
+    graph_json = json.dumps(graph_json)
+
+
+
+
+
     stop_words = get_stop_words('en')
 
     querytext = TweetQuery.objects.get(pk=pk)
@@ -204,7 +246,7 @@ def query_detail(request, pk):
     values.append(neutral)
 
     mylist = json.dumps(values)
-    return render(request, 'queryreport.html', {'values':mylist,'query': query, 'tweetdata': tweetdata, 'wordcloudpos': wordcloudpos, 'wordcloudneg': wordcloudneg, 'stop_words': stop_words})
+    return render(request, 'queryreport.html', {'values':mylist,'query': query, 'tweetdata': tweetdata, 'wordcloudpos': wordcloudpos, 'wordcloudneg': wordcloudneg, 'graph_json': graph_json})
 
 
 # Collect function that collects the tweets and stores them in the database
@@ -247,6 +289,7 @@ def collect(request):
             tweet_data.save()
         
         return render(request, 'collectedpage.html', {'tweets': tweets1})
+        
 
 
 
@@ -280,3 +323,21 @@ def word_cloud_view(sentences, stopwords):
     # Render the template and pass the data as context
     return words
 
+
+
+def build_graph(tweet, entities):
+    # Create an empty graph
+    G = nx.Graph()
+
+    # Add nodes for the named entities
+    for entity in entities:
+        G.add_node(entity)
+
+    # Add a node for the tweet
+    G.add_node("Tweet")
+
+    # Add edges connecting the tweet to the named entities
+    for entity in entities:
+        G.add_edge("Tweet", entity)
+
+    return G
