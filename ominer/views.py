@@ -70,7 +70,7 @@ class TwitterSentClass():
 
     # function to clean tweet text by removing links, special characters using simple regex statements.
     def cleaning_process(self, tweet):
-        if type(tweet) == np.float:
+        if type(tweet) == float:
             return ""
             
         return ' '.join(re.sub("(@[A-Za-z0-9]+)|([^0-9A-Za-z \t])|(\w+:\/\/\S+)"
