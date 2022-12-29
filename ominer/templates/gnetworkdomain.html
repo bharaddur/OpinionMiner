@@ -19,7 +19,7 @@
                         <div id="graph" style="width: 800px; height: 600px;"></div>
                         <script>
                           var container = document.getElementById('graph');
-                          var data = {{ graph_json|safe }};
+                          var data = {{ graph_jsonAnno|safe }};
                           
                           // Add a color property to the nodes option
                           var options = {
@@ -28,7 +28,7 @@
                               
                             },
                             layout: {
-                              improvedLayout: true,  // Enable the improved layout algorithm
+                              improvedLayout: false,  // Enable the improved layout algorithm
                               hierarchical: {
                                 enabled: true,  // Enable the hierarchical layout
                                 levelSeparation: 150,  // Set the separation between levels
@@ -40,7 +40,8 @@
                                 direction: 'UD',  // Set the layout direction (UD = top to bottom)
                                 sortMethod: 'directed'  // Set the sort method (directed = by direction)
                                 
-                              }
+                              }     
+                              
                             },
       
                             edges: {

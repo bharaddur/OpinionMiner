@@ -24,7 +24,8 @@ urlpatterns = [
     path('queries', queries, name='queries'),
     path('queries/<int:pk>/', query_detail, name='query_detail'),
     path('queries/<int:pk>/datatable', datatable_detail, name='query_datatable'),
-    path('queries/<int:pk>/gnetwork', gnetwork_detail, name='query_gnetwork'),
+    path('queries/<int:pk>/gnetworktweet', gnetwork_detail_tweet, name='query_gnetwork'),
+    path('queries/<int:pk>/gnetworkdomain', gnetwork_detail_domain, name='query_gnetwork_domain'),
     path('', include('users.urls')),
 
 ]

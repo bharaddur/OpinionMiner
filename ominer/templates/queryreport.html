@@ -10,7 +10,7 @@
                     <li class="breadcrumb-item active">Query: {{query.query}}</li>
                 </ol>
                 <div class="row">
-                    <div class="col-xl-3 col-md-6">
+                    <div class="col-sm">
                         <div class="card bg-dark text-white mb-4">
                             <div class="card-body" style="border-bottom: 2px solid #fff;">Most Followed Users (Top 10)</div>
                             <table>
@@ -33,7 +33,7 @@
                                 
                         </div>
                     </div>
-                    <div class="col-xl-3 col-md-6">
+                    <div class="col-sm">
                         <div class="card bg-light text-black mb-4">
                             <div class="card-body" style="border-bottom: 2px solid #000;">Most Used Hashtags (Top 10)</div>
                             <table>
@@ -55,7 +55,7 @@
                             </table>
                         </div>
                     </div>
-                    <div class="col-xl-3 col-md-6">
+                    <div class="col-sm">
                         <div class="card bg-secondary text-white mb-4">
                             <div class="card-body" style="border-bottom: 2px solid #fff;">Most Used Entities (Top 10)</div>
                             <table>
@@ -77,24 +77,60 @@
                             </table>
                         </div>
                     </div>
-                    <div class="col-xl-3 col-md-6">
-                        <div class="card bg-danger text-white mb-4">
-                            <div class="card-body">Danger Card</div>
-                            <div class="card-footer d-flex align-items-center justify-content-between">
-                                <a class="small text-white stretched-link" href="#">View Details</a>
-                                <div class="small text-white"><i class="fas fa-angle-right"></i></div>
-                            </div>
-                        </div>
-                    </div>
                 </div>
                 <div class="row">
                     <div class="col-xl-6">
                         <div class="card mb-4">
                             <div class="card-header">
                                 <i class="fas fa-chart-area me-1"></i>
-                                Area Chart Example
+                                Sentiment Distribution According To Domains
                             </div>
-                            <div class="card-body"><canvas id="myAreaChart" width="100%" height="40"></canvas></div>
+                            <div class="card-body"><canvas id="myStackedBarChart" width="100%" height="40"></canvas></div>
+                            <script>
+                                // Set up the data for the chart
+                                var data = {
+                                  labels: ['product', 'organization', 'person', 'place', 'other'],
+                                  datasets: [
+                                    {
+                                      label: 'Positive',
+                                      data: {{positived}},
+                                      backgroundColor: '#007bff',
+                                      borderColor: '#007bff',
+                                      borderWidth: 1
+                                    },
+                                    {
+                                      label: 'Neutral',
+                                      data: {{neutrald}},
+                                      backgroundColor: '#ffc107',
+                                      borderColor: '#ffc107',
+                                      borderWidth: 1
+                                    },
+                                    {
+                                        label: 'Negative',
+                                        data: {{negatived}},
+                                        backgroundColor: '#dc3545',
+                                        borderColor: '#dc3545',
+                                        borderWidth: 1
+                                      }
+                                  ]
+                                };
+                              
+                                // Get the canvas element from the DOM
+                                var ctx = document.getElementById('myStackedBarChart').getContext('2d');
+                              
+                                // Create the chart using the Chart.js library
+                                var chart = new Chart(ctx, {
+                                  type: 'bar',
+                                  data: data,
+                                  options: {
+                                    scales: {
+                                      yAxes: [{
+                                        stacked: true
+                                      }]
+                                    }
+                                  }
+                                });
+                              </script>
                         </div>
                     </div>
                     <div class="col-xl-6">

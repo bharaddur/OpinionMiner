@@ -15,12 +15,23 @@
 						<div class="container">
                                 <div class="btn-group-vertical">               
                                     <ul class="list-group list-group-horizontal-lg"></ul>
-                                    {% for query in queries %}
-                                    
-                                        <a href='{% url 'query_detail' pk=query.pk %}' class="btn" style="color: white; background-color: #fd5e14; margin: 10px"type="submit" id="body-link-row">{{query.query}}</a>
-                                        <p>{{query.date}}</p>
-                                        <p>{{query.count}}</p>  
+                                    <table>
+									<thead>
+										<tr style="border-bottom: 1px solid #000;">
+											<th>Query</th>
+											<th>Date</th>
+											<th>Count</th>
+										</tr>
+									</thead>
+										
+									{% for query in queries %}
+                                    <tr style="border-bottom: 1px solid #000;">
+                                        <td><a href='{% url 'query_detail' pk=query.pk %}' class= "btn btn-primary" style="min-width: 150px" id="body-link-row">{{query.query}}</a></td>
+                                        <td>{{query.date}}</td>
+                                        <td>{{query.count}}</td>
+									</tr>  
                                       {% endfor %}
+									</table>
                                     </ul>                
                                 </div>
                         </div>
@@ -28,7 +39,6 @@
 				</div>
 			</div>
 			<div style="height: 100vh"></div>
-			<div class="card mb-4"><div class="card-body">When scrolling, the navigation stays at the top of the page. This is the end of the static navigation demo.</div></div>
 		</div>
 	</main>
 	<footer class="py-4 bg-light mt-auto">

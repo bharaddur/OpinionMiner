@@ -30,7 +30,6 @@ from stop_words import get_stop_words
 import networkx as nx
 from networkx.readwrite import json_graph
 
-
 # Initialise environment variables
 env = environ.Env()
 environ.Env.read_env()
@@ -241,6 +240,58 @@ def query_detail(request, pk):
     neg_tweets = Tweets.objects.filter(query=pk, sentiment='negative')
     neut_tweets = Tweets.objects.filter(query=pk, sentiment='neutral')
 
+
+    posdomains = []
+
+    for annotation in pos_tweets:
+        if annotation.annotations != '':
+            jsonEnt = json.loads(annotation.annotations)
+            for domain in jsonEnt:
+                posdomains.append(domain.get('type').lower())
+
+    negdomains = []
+
+    for annotation in neg_tweets:
+        if annotation.annotations != '':
+            jsonEnt = json.loads(annotation.annotations)
+            for domain in jsonEnt:
+                negdomains.append(domain.get('type').lower())
+    
+    neutdomains = []
+
+    for annotation in neut_tweets:
+        if annotation.annotations != '':
+            jsonEnt = json.loads(annotation.annotations)
+            for domain in jsonEnt:
+                neutdomains.append(domain.get('type').lower())
+
+    
+    pp = posdomains.count("product")
+    po = posdomains.count("organization")
+    pe = posdomains.count("person")
+    ppe = posdomains.count("place")
+    pot = posdomains.count("other")
+    np = negdomains.count("product")
+    no = negdomains.count("organization")
+    ne = negdomains.count("person")
+    npe = negdomains.count("place")
+    nt = negdomains.count("other")
+    nup = neutdomains.count("product")
+    nuo = neutdomains.count("organization")
+    nue = neutdomains.count("person")
+    nupe = neutdomains.count("place")
+    nut = neutdomains.count("other")
+
+
+    positived = [pp, po, pe, ppe, pot]  
+    negatived = [np, no, ne, npe, nt]
+    neutrald = [nup, nuo, nue, nupe, nut]
+
+
+    
+
+                   
+
     negtext = neg_tweets.values_list('cleaned_tweet', flat=True)
     wordcloudneg = word_cloud_view(negtext, stop_words)
 
@@ -270,40 +321,73 @@ def query_detail(request, pk):
                                                 'tweetLikedData': tweetLikedData, 
                                                 'WeightedHashtag': WeightedHashtag,
                                                 'WeightedEntity': WeightedEntity,
+                                                'positived': positived,
+                                                'negatived': negatived,
+                                                'neutrald': neutrald,
                                                 })
 
 
-def gnetwork_detail(request, pk):
+def gnetwork_detail_tweet(request, pk):
     query = get_object_or_404(TweetQuery, pk=pk)
 
     tweetdata = Tweets.objects.filter(query=pk)
 
 
     g = nx.Graph()
+    node_counts = {}
+    edge_counts = {}
+
+    p = 0.7
 
     for tweet in tweetdata:
-        annotations = tweet.annotations
+        annotations = tweet.annotations.lower()
         if annotations != '':
             json_string = json.loads(annotations)
             for i in json_string:
-                g.add_node(i.get('normalized_text'))
+                # Increment the count for the node
+                if i.get('normalized_text') not in node_counts and i.get('probability') > p:
+                    node_counts[i.get('normalized_text')] = 0
+                if i.get('probability') > p:
+                    node_counts[i.get('normalized_text')] += 1
+
                 for j in json_string:
-                    if i.get('normalized_text') != j.get('normalized_text'):
-                        g.add_node(j.get('normalized_text'))
-                        g.add_edge(i.get('normalized_text'), j.get('normalized_text'))       
-                        
+                    if i.get('normalized_text') != j.get('normalized_text') and i.get('probability') > p and j.get('probability') > p:
+                        # Increment the count for the edge
+                        if not g.has_edge(i.get('normalized_text'), j.get('normalized_text')) and not g.has_edge(j.get('normalized_text'), i.get('normalized_text')):
+                            edge_counts[(i.get('normalized_text'), j.get('normalized_text'))] = 0
+                        edge_counts[(i.get('normalized_text'), j.get('normalized_text'))] += 1
+
+    # Add the nodes to the graph and set the weight based on the count
+    for node, count in node_counts.items():
+        g.add_node(node, weight=count, size=count)
+
+    # Add the edges to the graph and set the weight based on the count
+    for edge, count in edge_counts.items():
+        u, v = edge
+        g.add_edge(u, v, weight=count, size=count)
+
+
+
+    # Get the list of nodes with less than 5 edges
+    nodes_to_remove = [node for node in g.nodes() if g.degree(node) < 10]
+
+    # Remove the nodes from the graph
+    for node in nodes_to_remove:
+        g.remove_node(node)
+
+        
 
     graph_json = json_graph.node_link_data(g)
 
     for i, node in enumerate(graph_json['nodes']):
         graph_json['nodes'][i]['id'] = node['id']
         graph_json['nodes'][i]['label'] = node['id']
-        graph_json['nodes'][i]['font'] = {'size': 14, 'color': 'black'}
+        graph_json['nodes'][i]['font'] = {'size': 9, 'color': 'black'}
     
     for i, link in enumerate(graph_json['links']):
         graph_json['links'][i]['from'] = link['source']
         graph_json['links'][i]['to'] = link['target']
-        graph_json['links'][i]['font'] = {'size': 14, 'color': 'black'}
+        graph_json['links'][i]['font'] = {'size': 9, 'color': 'black'}
 
     graph_json['edges'] = graph_json.pop("links")
     
@@ -312,17 +396,59 @@ def gnetwork_detail(request, pk):
 
     ## Graph With Simplified Annotations
 
+    return render(request, 'gnetwork.html', {'query': query, 'tweetdata': tweetdata,'graph_json': graph_json})
+
+def gnetwork_detail_domain(request, pk):
+
+    query = get_object_or_404(TweetQuery, pk=pk)
+
+    tweetdata = Tweets.objects.filter(query=pk)
+      # Initialize a dictionary to store the counts of the nodes and edges
+    node_counts = {}
+    edge_counts = {}
+
     sg = nx.Graph()
 
     for tweet in tweetdata:
-        annotations = tweet.annotations
+        annotations = tweet.annotations.lower()
         if annotations != '':
             jsonA = json.loads(annotations)
             for i in jsonA:
-                sg.add_node(i.get('normalized_text'))
-                sg.add_node(i.get('type'), color='red', shadow=True, size=100)
-                sg.add_edge(i.get('normalized_text'), i.get('type'))
-                   
+                # Increment the count for the node
+                if i.get('normalized_text') not in node_counts:
+                    node_counts[i.get('normalized_text')] = 0
+                node_counts[i.get('normalized_text')] += 1
+                if i.get('type') not in node_counts:
+                    node_counts[i.get('type')] = 0
+                node_counts[i.get('type')] += 1
+
+                # Add the count as the size attribute to the node
+                sg.add_node(i.get('normalized_text'), size=node_counts[i.get('normalized_text')])
+                sg.add_node(i.get('type'), color='red', shadow=True, size=node_counts[i.get('type')])
+                # Increment the count for the edge
+                if not sg.has_edge(i.get('type'),i.get('normalized_text')) and not sg.has_edge(i.get('normalized_text'), i.get('type')):
+                    edge_counts[(i.get('type'),i.get('normalized_text'))] = 0
+                edge_counts[(i.get('type'),i.get('normalized_text'))] += 1
+                # Add the count as the weight attribute to the edge
+                sg.add_edge(i.get('type'),i.get('normalized_text'), weight=edge_counts[(i.get('type'),i.get('normalized_text'))])
+
+    # Add the nodes to the graph and set the weight based on the count
+    for node, count in node_counts.items():
+        sg.add_node(node, weight=count, size=count)
+
+    # Add the edges to the graph and set the weight based on the count
+    for edge, count in edge_counts.items():
+        u, v = edge
+        sg.add_edge(u, v, weight=count, size=count)  
+
+
+    # Get the list of nodes with weight less than 5
+    nodes_to_remove = [node for node in sg.nodes(data=True) if node[1]['weight'] < 3]
+
+    # Remove the nodes from the graph
+    for node in nodes_to_remove:
+        sg.remove_node(node[0])
+          
                         
 
     graph_jsonAnno = json_graph.node_link_data(sg)
@@ -343,9 +469,7 @@ def gnetwork_detail(request, pk):
 
     graph_jsonAnno = json.dumps(graph_jsonAnno)
 
-    return render(request, 'gnetwork.html', {'query': query, 'tweetdata': tweetdata,'graph_json': graph_json, 'graph_jsonAnno': graph_jsonAnno})
-
-
+    return render(request, 'gnetworkdomain.html', {'query': query, 'tweetdata': tweetdata, 'graph_jsonAnno': graph_jsonAnno})
 
 def datatable_detail(request, pk):
     query = get_object_or_404(TweetQuery, pk=pk)
