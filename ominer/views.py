@@ -236,12 +236,10 @@ def query_detail(request, pk):
     stop_words = get_stop_words('en')
     additionalstop_words = nltk.word_tokenize(querytext.query)
 
-    nltk_stop_words = nltk.corpus.stopwords.words('english')
     
     for word in additionalstop_words:
         stop_words.append(word.lower())
-    for word in nltk_stop_words:
-        stop_words.append(word.lower())
+
 
     # get cleaned_tweets from database and create a wordcloud
     pos_tweets = Tweets.objects.filter(query=pk, sentiment='positive')
