@@ -1,22 +1,63 @@
 {% extends 'users/base.html' %}
-{% load crispy_forms_tags %}
 {% load static %}
 
 {% block content %}
-<html>
-	<head>
-		<title>Your query was successful</title>
-		
-	</head>
-	<body>
-		<form action="" method="post">
-			{% csrf_token %}
+<div id="layoutSidenav_content">
+	<main>
+		<div class="container-fluid px-4">
+			<h1 class="mt-4">Your Latest Query</h1>
+			<ol class="breadcrumb mb-4">
+				<li class="breadcrumb-item active">You've successfully collected tweets. You can go to your dashboard by clicking blue button</li>
+				<li class="breadcrumb-item active">Or you can go to your previous queries by clicking orange button</li>
+			</ol>
+			<div class="card mb-4">
+				<div class="card-body">
+					<p class="mb-0">
+						<div class="container">
+                                <div class="btn-group-vertical">               
+                                    <ul class="list-group list-group-horizontal-lg"></ul>
+                                    <table>
+									<thead>
+										<tr style="border-bottom: 1px solid #000;">
+											<th>Query</th>
+											<th>Date</th>
+											<th>Count</th>
+										</tr>
+									</thead>
+										
+                                    <tr style="border-bottom: 1px solid #000;">
+                                        <td><a href='{% url 'query_detail' pk=query.pk %}' class= "btn btn-primary" style="min-width: 150px" id="body-link-row">{{query.query}}</a></td>
+                                        <td>{{query.date}}</td>
+                                        <td>{{query.count}}</td>
+									</tr>  
+									</table>
+
+									<a href='{% url 'queries' %}' class="btn" style="color: white; background-color: #fd5e14;"type="submit" id="body-link-row">Queries</a>
+                                    </ul>                
+                                </div>
+                        </div>
+					</p>
+				</div>
+			</div>
+			<div style="height: 100vh"></div>
+		</div>
+	</main>
+	<footer class="py-4 bg-light mt-auto">
+		<div class="container-fluid px-4">
+			<div class="d-flex align-items-center justify-content-between small">
+				<div class="text-muted">Copyright &copy; Your Website 2022</div>
+				<div>
+					<a href="#">Privacy Policy</a>
+					&middot;
+					<a href="#">Terms &amp; Conditions</a>
+				</div>
+			</div>
+		</div>
+	</footer>
+</div>
+{% endblock content %}
+
+
+
 			<p>Your query was successfull please go to your queries page</p>
 			<a href='{% url 'queries' %}' class="btn" style="color: white; background-color: #fd5e14;"type="submit" id="body-link-row">Queries</a>
-
-		</form>
-	</body>
-</html>
-
-
-{% endblock %}

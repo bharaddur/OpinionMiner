@@ -5,5 +5,5 @@ from django.core.exceptions import ValidationError
 
 class TwitterForm(forms.Form):
     Keyword = forms.CharField(max_length=50)
-    Count = forms.IntegerField(max_value=10000)
+    Count = forms.IntegerField(min_value= 500, max_value=10000)
     

@@ -7,6 +7,9 @@ from ominer.models import TweetQuery, Tweets
 
 from django.contrib.auth.models import User
 
+from django.shortcuts import redirect
+from django.contrib.auth.decorators import login_required
+
 import json
 import nltk
 from nltk.corpus import stopwords
@@ -168,13 +171,15 @@ class TwitterSentClass():
 
 # Form page that takes the query and number of tweets
 
+#in order to use below function you need to be authenticated
+@login_required(login_url='/login/')
 def show(request):
     form = TwitterForm()
     return render(request,'index.html',{'ff':form})
 
 
 # Query page that shows the queries that has been done previously
-
+@login_required(login_url='/login/')
 def queries(request):
     querydata = TweetQuery.objects.filter(owner=request.user).order_by('-date')
     
@@ -185,6 +190,7 @@ def queries(request):
     return render(request,'queries.html', query)
 
 # Detail page that shows the details of the query in a dashboard
+@login_required(login_url='/login/')
 def query_detail(request, pk):
     query = get_object_or_404(TweetQuery, pk=pk)
 
@@ -326,7 +332,7 @@ def query_detail(request, pk):
                                                 'neutrald': neutrald,
                                                 })
 
-
+@login_required(login_url='/login/')
 def gnetwork_detail_tweet(request, pk):
     query = get_object_or_404(TweetQuery, pk=pk)
 
@@ -398,6 +404,7 @@ def gnetwork_detail_tweet(request, pk):
 
     return render(request, 'gnetwork.html', {'query': query, 'tweetdata': tweetdata,'graph_json': graph_json})
 
+@login_required(login_url='/login/')
 def gnetwork_detail_domain(request, pk):
 
     query = get_object_or_404(TweetQuery, pk=pk)
@@ -471,6 +478,7 @@ def gnetwork_detail_domain(request, pk):
 
     return render(request, 'gnetworkdomain.html', {'query': query, 'tweetdata': tweetdata, 'graph_jsonAnno': graph_jsonAnno})
 
+@login_required(login_url='/login/')
 def datatable_detail(request, pk):
     query = get_object_or_404(TweetQuery, pk=pk)
 
@@ -480,7 +488,7 @@ def datatable_detail(request, pk):
 
 
 # Collect function that collects the tweets and stores them in the database
-
+@login_required(login_url='/login/')
 def collect(request):
 
     if request.method == 'POST' :
@@ -519,13 +527,14 @@ def collect(request):
                 
             )
             tweet_data.save()
-        
-        return render(request, 'collectedpage.html', {'tweets': tweets1})
-        
 
+            query = TweetQuery.objects.filter(owner=request.user, query=t).last()
+            
+        
+        return render(request, 'collectedpage.html', {'query': query})
+        
 
 # Wordcloud function that creates necessary values to send to the html page
-
 def word_cloud_view(sentences, stopwords):
     # Tokenize the sentences and count the frequencies of the words
     word_counts = {}
@@ -554,9 +563,7 @@ def word_cloud_view(sentences, stopwords):
     return words
 
 
-
-    # Create a weighted hashtag list
-
+# Create a weighted hashtag list
 def hashtag_list(list):
     frequency = {}
 
