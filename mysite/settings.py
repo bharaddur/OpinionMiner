@@ -12,7 +12,10 @@ https://docs.djangoproject.com/en/4.1/ref/settings/
 
 from pathlib import Path
 import os
+import sys
+import dj_database_url
 import mimetypes
+from django.core.management.utils import get_random_secret_key
 
 mimetypes.add_type("text/css", ".css",  True)
 mimetypes.add_type("text/javascript", ".js", True)
@@ -30,12 +33,22 @@ BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 # See https://docs.djangoproject.com/en/4.1/howto/deployment/checklist/
 
 # SECURITY WARNING: keep the secret key used in production secret!
-SECRET_KEY = 'django-insecure-m19xjipxv_@83!!zt=mdsi@)stg$@gk6$_q&=9hp@5dds8nvci'
+##SECRET_KEY = 'django-insecure-m19xjipxv_@83!!zt=mdsi@)stg$@gk6$_q&=9hp@5dds8nvci'
+
+#deployment
+SECRET_KEY = os.getenv("DJANGO_SECRET_KEY", get_random_secret_key())
 
 # SECURITY WARNING: don't run with debug turned on in production!
-DEBUG = True
+##DEBUG = True
 
-ALLOWED_HOSTS = ['127.0.0.1']
+#deployment
+DEBUG = os.getenv("DEBUG", "False") == "True"
+
+##ALLOWED_HOSTS = ['127.0.0.1']
+
+#deployment
+ALLOWED_HOSTS = os.getenv("DJANGO_ALLOWED_HOSTS", "127.0.0.1,localhost").split(",")
+DEVELOPMENT_MODE = os.getenv("DEVELOPMENT_MODE", "False") == "True"
 
 
 # Application definition
@@ -92,9 +105,9 @@ WSGI_APPLICATION = 'mysite.wsgi.application'
 DATABASES = {
     'default': {
         'ENGINE': 'django.db.backends.postgresql',
-        'NAME': 'Ominer',
-        'USER': 'Ominer',
-        'PASSWORD': 'Ominer',
+        'NAME': os.getenv('DB_NAME', 'Ominer'),
+        'USER': os.getenv('DB_USER', 'Ominer'),
+        'PASSWORD': os.getenv('DB_PASSWORD', 'Ominer'),
 
     }
 }

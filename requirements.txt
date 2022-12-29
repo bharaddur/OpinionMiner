@@ -6,6 +6,7 @@ numpy
 matplotlib
 django-environ
 psycopg2
+psycopg2-binary
 django-crispy-forms
 wordcloud
 requests
@@ -14,3 +15,5 @@ twarc
 nltk
 stop-words
 networkx
+gunicorn
+dj-database-url
