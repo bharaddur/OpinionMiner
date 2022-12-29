@@ -79,7 +79,11 @@
                             </a>
                             <a class="nav-link" href="{% url 'query_gnetwork' pk=query.pk %}">
                                 <div class="sb-nav-link-icon"><i class="fa-solid fa-diagram-project"></i></div>
-                                Graph Network
+                                Graph Network-Entity Tweet
+                            </a>
+                            <a class="nav-link" href="{% url 'query_gnetwork_domain' pk=query.pk %}">
+                                <div class="sb-nav-link-icon"><i class="fa-solid fa-diagram-project"></i></div>
+                                Graph Network-Entity Domain
                             </a>
                             {% endif %}
                         </div>
