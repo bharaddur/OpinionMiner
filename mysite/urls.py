@@ -19,10 +19,12 @@ from ominer.views import *
 
 urlpatterns = [
     path('admin/', admin.site.urls),
-    path('tweet', show),
+    path('tweet', show, name='tweet'),
     path('collected', collect),
     path('queries', queries, name='queries'),
     path('queries/<int:pk>/', query_detail, name='query_detail'),
+    path('queries/<int:pk>/datatable', datatable_detail, name='query_datatable'),
+    path('queries/<int:pk>/gnetwork', gnetwork_detail, name='query_gnetwork'),
     path('', include('users.urls')),
 
 ]

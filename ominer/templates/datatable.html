@@ -1,0 +1,70 @@
+{% extends 'users/base.html' %}
+{% load static %}
+
+{% block content %}
+    <div id="layoutSidenav_content">
+        <main>
+            <div class="container-fluid px-4">
+                <h1 class="mt-4">Datatable of Query: {{query.query}}</h1>
+                <ol class="breadcrumb mb-4">
+                    <li class="breadcrumb-item active">Spreadsheet view of fetched Tweets</li>
+                </ol>
+                <div class="card mb-4">
+                    <div class="card-header">
+                        <i class="fas fa-table me-1"></i>
+                        Query Tweets
+                    </div>
+                    <div class="card-body">
+                        <table id="datatablesSimple">
+                            <thead>
+                                <tr>
+                                    <th>Username</th>
+                                    <th>Tweet</th>
+                                    <th>Sentiment</th>
+                                    <th>Location</th>
+                                    <th>Like Count</th>
+                                    <th>Retweet Count</th>
+                                </tr>
+                            </thead>
+                            <tfoot>
+                                <tr>
+                                    <th>Username</th>
+                                    <th>Tweet</th>
+                                    <th>Sentiment</th>
+                                    <th>Location</th>
+                                    <th>Like Count</th>
+                                    <th>Retweet Count</th>
+                                </tr>
+                            </tfoot>
+                            <tbody>
+                                {% for tweet in tweetdata %} 
+                                <tr>
+                                    <td>{{tweet.user}}</td>
+                                    <td>{{tweet.tweet}}</td>
+                                    <td>{{tweet.sentiment}}</td>
+                                    <td>{{tweet.location}}</td>
+                                    <td>{{tweet.like_count}}</td>
+                                    <td>{{tweet.retweet_count}}</td>
+                                </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </main>             
+    </div>
+</div>
+<script src="https://d3js.org/d3.v4.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/billboard.js/dist/billboard.min.js"></script>
+<link rel="stylesheet" href= "https://cdn.jsdelivr.net/npm/billboard.js/dist/billboard.min.css" />
+<link rel= "https://maxcdn.bootstrapcdn.com/bootstrap/3.3.5/css/bootstrap.min.css" type="text/css"/>
+
+<script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.5/js/bootstrap.min.js"></script>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/1.0.1/Chart.min.js"></script>
+
+<body>
+    
+
+{% endblock content %}

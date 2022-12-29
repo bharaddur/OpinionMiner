@@ -1,0 +1,112 @@
+{% extends 'users/base.html' %}
+{% load static %}
+
+{% block content %}
+    <div id="layoutSidenav_content">
+        <main>
+            <div class="container-fluid px-4">
+                <h1 class="mt-4">Graph Network Of Query: {{query.query}} </h1>
+                <ol class="breadcrumb mb-4">
+                    <li class="breadcrumb-item active">You can view named entities and their relations with domains</li>
+                </ol>
+
+                <div class="card mb-4">
+                    <div class="card-header">
+                        <i class="fas fa-table me-1"></i>
+                        Graph Network
+                    </div>
+                    <div class="card-body" style="width: 800px; height: 600px;">
+                        <div id="graph" style="width: 800px; height: 600px;"></div>
+                        <script>
+                          var container = document.getElementById('graph');
+                          var data = {{ graph_jsonAnno|safe }};
+                          
+                          // Add a color property to the nodes option
+                          var options = {
+                            physics: {
+                              enabled: false
+                            },
+                            layout: {
+                              improvedLayout: false
+                            },
+      
+                            edges: {
+                              smooth: {
+                                enabled: false,
+                                type: 'continuous'
+                              },
+                              scaling: {
+                                enabled: true,
+                                rate: 0.5
+
+                              }
+                              
+                            }
+                            ,
+                            nodes: {
+                              shape: 'circle',
+                              scaling: {
+                                min: 1,
+                                max: 30
+                              },
+
+                              color: {
+      
+                              
+                                border: '#2B7CE9',
+                                highlight: {
+                                  background: '#D2E5FF',
+                                  border: '#2B7CE9'
+                                }
+                              },
+                              font: {
+                                size: 14,
+                                color: '#343434'
+                              }
+                            },
+                            edges: {
+                              width: 2,
+                              color: {
+                                color: '#848484',
+                                highlight: '#848484'
+                              },
+                              font: {
+                                size: 14,
+                                color: '#343434'
+                              }
+                            }
+                          };
+
+                          console.log(data);
+                          console.log(options)
+
+                          var network = new vis.Network(container, data, options); 
+                          
+                          </script>
+                          
+                        
+                    </div>
+                </div>
+            </div>
+        </main>             
+    </div>
+</div>
+
+
+
+
+
+
+    <script src="https://d3js.org/d3.v4.min.js"></script>
+	<script src="https://cdn.jsdelivr.net/npm/billboard.js/dist/billboard.min.js"></script>
+<link rel="stylesheet" href= "https://cdn.jsdelivr.net/npm/billboard.js/dist/billboard.min.css" />
+<link rel= "https://maxcdn.bootstrapcdn.com/bootstrap/3.3.5/css/bootstrap.min.css" type="text/css"/>
+
+<script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.5/js/bootstrap.min.js"></script>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/1.0.1/Chart.min.js"></script>
+
+<body>
+    
+
+{% endblock content %}

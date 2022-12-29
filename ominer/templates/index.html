@@ -15,8 +15,8 @@
 					<p class="mb-0">
 						<form action="collected" method="post">
 							{% csrf_token %}
-							{{ ff.as_p }}<br>
-							<button type="submit">Collect Tweets</button>
+							{{ ff|crispy }}<br>
+							<button type="submit" class="btn btn-primary">Collect Tweets</button>
 					</p>
 				</div>
 			</div>

@@ -127,18 +127,36 @@ class TwitterSentClass():
                 parsed_tweet['date'] = tweet['created_at']
                 parsed_tweet['followers_count'] = tweet['author']['public_metrics']['followers_count']
                 parsed_tweet['id'] = tweet['id']
+                
                 if tweet['author'].get('location') is not None:
                     parsed_tweet['location'] = tweet['author']['location']
                 else:
-                    parsed_tweet['location'] = 'None'
+                    parsed_tweet['location'] = ''
                 
                 #convert to string
                 if tweet.get('context_annotations') is None:
-                   parsed_tweet['context_annotation'] = 'None'
+                   parsed_tweet['context_annotation'] = ''
                 else:
                     contextannotation = json.dumps(tweet['context_annotations'])
                     parsed_tweet['context_annotation'] = contextannotation
-           
+                
+                if tweet.get('entities') is None:
+                    parsed_tweet['hashtags'] = ''
+                else:
+                    if tweet['entities'].get('hashtags') is None:
+                        parsed_tweet['hashtags'] = ''
+                    else:
+                        hashtags = json.dumps(tweet['entities']['hashtags'])
+                        parsed_tweet['hashtags'] = hashtags
+
+                if tweet.get('entities') is None:
+                    parsed_tweet['annotations'] = ''
+                else:
+                    if tweet['entities'].get('annotations') is None:
+                        parsed_tweet['annotations'] = ''
+                    else:
+                        annotations = json.dumps(tweet['entities']['annotations'])
+                        parsed_tweet['annotations'] = annotations
 
               
                 tweets.append(parsed_tweet)
@@ -173,52 +191,49 @@ def query_detail(request, pk):
 
     tweetdata = Tweets.objects.filter(query=pk)
 
+    userFollowerData = Tweets.objects.order_by('-followers_count').filter(query=pk)[:10]
 
-    g = nx.Graph()
+    tweetLikedData = tweetdata.order_by('-like_count')[:10]
 
+    querytext = TweetQuery.objects.get(pk=pk)
+
+    # Weighted Hashtag List Creation 
+    Hashtaglist = []
     for tweet in tweetdata:
-        json_string = tweet.context_annotations
-        if json_string != 'None':
-            jsonCA = json.loads(json_string)
-            for i in jsonCA:
-                g.add_node(i['entity']['name'])
-                counter = 0  
-                for j in jsonCA:
-                    if j['entity']['name'] != i['entity']['name']:
-                        g.add_edge(i['entity']['name'], j['entity']['name'])
-                counter += 1
-                if counter == 1:
-                    break           
-                        
-
-    graph_json = json_graph.node_link_data(g)
-
-    for i, node in enumerate(graph_json['nodes']):
-        graph_json['nodes'][i]['id'] = node['id']
-        graph_json['nodes'][i]['label'] = node['id']
-        graph_json['nodes'][i]['font'] = {'size': 14, 'color': 'black'}
+        if tweet.hashtags != '':
+            jsonHash = json.loads(tweet.hashtags)
+            for hashtag in jsonHash:
+                Hashtaglist.append(hashtag.get('tag').lower())
     
-    for i, link in enumerate(graph_json['links']):
-        graph_json['links'][i]['from'] = link['source']
-        graph_json['links'][i]['to'] = link['target']
-        graph_json['links'][i]['label'] = f"Edge {i}"
-        graph_json['links'][i]['font'] = {'size': 14, 'color': 'black'}
+    WeightedHashtag = hashtag_list(Hashtaglist)
+    WeightedHashtag = sorted(WeightedHashtag, key=lambda x: x[1], reverse=True)[:10]
 
-    graph_json['edges'] = graph_json.pop("links")
+    # Weighted Entity List Creation
+    Entitylist = []
+    for tweet in tweetdata:
+        if tweet.annotations != '':
+            jsonEnt = json.loads(tweet.annotations)
+            for entity in jsonEnt:
+                if entity.get('normalized_text') != querytext.query:
+                    if entity.get('normalized_text') != querytext.query.lower():
+                        Entitylist.append(entity.get('normalized_text').lower())
+                    else: 
+                        continue
     
-
-    graph_json = json.dumps(graph_json)
-
-
-
+    WeightedEntity = hashtag_list(Entitylist)
+    WeightedEntity = sorted(WeightedEntity, key=lambda x: x[1], reverse=True)[:10]
+        
+    
 
 
     stop_words = get_stop_words('en')
-
-    querytext = TweetQuery.objects.get(pk=pk)
     additionalstop_words = nltk.word_tokenize(querytext.query)
+
+    nltk_stop_words = nltk.corpus.stopwords.words('english')
     
     for word in additionalstop_words:
+        stop_words.append(word.lower())
+    for word in nltk_stop_words:
         stop_words.append(word.lower())
 
     # get cleaned_tweets from database and create a wordcloud
@@ -246,7 +261,98 @@ def query_detail(request, pk):
     values.append(neutral)
 
     mylist = json.dumps(values)
-    return render(request, 'queryreport.html', {'values':mylist,'query': query, 'tweetdata': tweetdata, 'wordcloudpos': wordcloudpos, 'wordcloudneg': wordcloudneg, 'graph_json': graph_json})
+    return render(request, 'queryreport.html', {'values':mylist,
+                                                'query': query, 
+                                                'tweetdata': tweetdata, 
+                                                'wordcloudpos': wordcloudpos, 
+                                                'wordcloudneg': wordcloudneg, 
+                                                'userFollowerData': userFollowerData, 
+                                                'tweetLikedData': tweetLikedData, 
+                                                'WeightedHashtag': WeightedHashtag,
+                                                'WeightedEntity': WeightedEntity,
+                                                })
+
+
+def gnetwork_detail(request, pk):
+    query = get_object_or_404(TweetQuery, pk=pk)
+
+    tweetdata = Tweets.objects.filter(query=pk)
+
+
+    g = nx.Graph()
+
+    for tweet in tweetdata:
+        annotations = tweet.annotations
+        if annotations != '':
+            json_string = json.loads(annotations)
+            for i in json_string:
+                g.add_node(i.get('normalized_text'))
+                for j in json_string:
+                    if i.get('normalized_text') != j.get('normalized_text'):
+                        g.add_node(j.get('normalized_text'))
+                        g.add_edge(i.get('normalized_text'), j.get('normalized_text'))       
+                        
+
+    graph_json = json_graph.node_link_data(g)
+
+    for i, node in enumerate(graph_json['nodes']):
+        graph_json['nodes'][i]['id'] = node['id']
+        graph_json['nodes'][i]['label'] = node['id']
+        graph_json['nodes'][i]['font'] = {'size': 14, 'color': 'black'}
+    
+    for i, link in enumerate(graph_json['links']):
+        graph_json['links'][i]['from'] = link['source']
+        graph_json['links'][i]['to'] = link['target']
+        graph_json['links'][i]['font'] = {'size': 14, 'color': 'black'}
+
+    graph_json['edges'] = graph_json.pop("links")
+    
+
+    graph_json = json.dumps(graph_json)
+
+    ## Graph With Simplified Annotations
+
+    sg = nx.Graph()
+
+    for tweet in tweetdata:
+        annotations = tweet.annotations
+        if annotations != '':
+            jsonA = json.loads(annotations)
+            for i in jsonA:
+                sg.add_node(i.get('normalized_text'))
+                sg.add_node(i.get('type'), color='red', shadow=True, size=100)
+                sg.add_edge(i.get('normalized_text'), i.get('type'))
+                   
+                        
+
+    graph_jsonAnno = json_graph.node_link_data(sg)
+
+
+    for i, node in enumerate(graph_jsonAnno['nodes']):
+        graph_jsonAnno['nodes'][i]['id'] = node['id']
+        graph_jsonAnno['nodes'][i]['label'] = node['id']
+        graph_jsonAnno['nodes'][i]['font'] = {'size': 14, 'color': 'black'}
+    
+    for i, link in enumerate(graph_jsonAnno['links']):
+        graph_jsonAnno['links'][i]['from'] = link['source']
+        graph_jsonAnno['links'][i]['to'] = link['target']
+        graph_jsonAnno['links'][i]['font'] = {'size': 14, 'color': 'black'}
+
+    graph_jsonAnno['edges'] = graph_jsonAnno.pop("links")
+    
+
+    graph_jsonAnno = json.dumps(graph_jsonAnno)
+
+    return render(request, 'gnetwork.html', {'query': query, 'tweetdata': tweetdata,'graph_json': graph_json, 'graph_jsonAnno': graph_jsonAnno})
+
+
+
+def datatable_detail(request, pk):
+    query = get_object_or_404(TweetQuery, pk=pk)
+
+    tweetdata = Tweets.objects.filter(query=pk)
+
+    return render(request, 'datatable.html', {'query': query, 'tweetdata': tweetdata})
 
 
 # Collect function that collects the tweets and stores them in the database
@@ -283,6 +389,8 @@ def collect(request):
                 date = i['date'],
                 followers_count = i['followers_count'],
                 context_annotations = i['context_annotation'],
+                hashtags = i['hashtags'],
+                annotations = i['annotations'],
 
                 
             )
@@ -290,8 +398,6 @@ def collect(request):
         
         return render(request, 'collectedpage.html', {'tweets': tweets1})
         
-
-
 
 
 # Wordcloud function that creates necessary values to send to the html page
@@ -325,19 +431,30 @@ def word_cloud_view(sentences, stopwords):
 
 
 
-def build_graph(tweet, entities):
-    # Create an empty graph
-    G = nx.Graph()
+    # Create a weighted hashtag list
 
-    # Add nodes for the named entities
-    for entity in entities:
-        G.add_node(entity)
+def hashtag_list(list):
+    frequency = {}
 
-    # Add a node for the tweet
-    G.add_node("Tweet")
+    # Iterate over the list and update the frequency dictionary
+    for item in list:
+        if item in frequency:
+            frequency[item] += 1
+        else:
+            frequency[item] = 1
 
-    # Add edges connecting the tweet to the named entities
-    for entity in entities:
-        G.add_edge("Tweet", entity)
+    # Create an empty set to keep track of added items
+    added_items = set()
 
-    return G
+    # Create an empty list to store the weighted items
+    weighted_items = []
+
+    # Add items to the list with weights based on their frequency
+    for item in list:
+        if item not in added_items:
+            weight = frequency[item]
+            weighted_items.append((item, weight))
+            added_items.add(item)
+
+    return weighted_items  
+
