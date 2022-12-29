@@ -33,6 +33,8 @@ from stop_words import get_stop_words
 import networkx as nx
 from networkx.readwrite import json_graph
 
+nltk.download('punkt')
+
 # Initialise environment variables
 env = environ.Env()
 environ.Env.read_env()
