@@ -16,6 +16,7 @@ import sys
 import dj_database_url
 import mimetypes
 from django.core.management.utils import get_random_secret_key
+import dotenv
 
 mimetypes.add_type("text/css", ".css",  True)
 mimetypes.add_type("text/javascript", ".js", True)
@@ -48,7 +49,7 @@ DEBUG = os.getenv("DEBUG", "True")
 
 #deployment
 ALLOWED_HOSTS = os.getenv("DJANGO_ALLOWED_HOSTS", "127.0.0.1,localhost").split(",")
-DEVELOPMENT_MODE = os.getenv("DEVELOPMENT_MODE", "False") == "False"
+DEVELOPMENT_MODE = os.getenv("DEVELOPMENT_MODE", "True") == "True"
 
 
 # Application definition
