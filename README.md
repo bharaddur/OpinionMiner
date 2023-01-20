@@ -16,45 +16,45 @@ How To Setup:
 
 First clone the git repository by
 
-git clone https://github.com/bharaddur/OpinionMiner.git
+    git clone https://github.com/bharaddur/OpinionMiner.git
 
 Than write:
 
-cd OpinionMiner
+    cd OpinionMiner
 
 Activate Virtual Environment:
 
-python3 -m venv myvenv
+    python3 -m venv myvenv
 
 Run Virtual Emvironment:
 
-source myvenv/bin/activate
+    source myvenv/bin/activate
 
 Install the requirements:
 
-pip install - requirements.txt
+    pip install - requirements.txt
 
 Than run(note that you need to have postgreSQL in your local and the connection settings should be same with the settings.py document): 
 
-python manage.py makemigrations
+    python manage.py makemigrations
 
-python manage.py migrate
+    python manage.py migrate
 
 DB settings:
 
-'ENGINE': 'django.db.backends.postgresql'
-'NAME': Ominer
-'USER': Ominer
-'PASSWORD': 'Ominer'
+    'ENGINE': 'django.db.backends.postgresql'
+    'NAME': Ominer
+    'USER': Ominer
+    'PASSWORD': 'Ominer'
 
 Create an .env file in the OpinionMiner/ominer directory and add your Twitter API credentials as below:
 
-API_KEY= <Your Key>
-API_SECRET= <Your Key>
-ACCESS_TOKEN= <Your Key>
-ACCESS_TOKEN_SECRET= <Your Key>
-BEARER_TOKEN= <Your Key>
-DEVELOPMENT_MODE=True
+    API_KEY= <Your Key>
+    API_SECRET= <Your Key>
+    ACCESS_TOKEN= <Your Key>
+    ACCESS_TOKEN_SECRET= <Your Key>
+    BEARER_TOKEN= <Your Key>
+    DEVELOPMENT_MODE=True
 
 That is it. Have Fun!
 
